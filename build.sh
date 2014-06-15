@@ -138,229 +138,102 @@ do_make() {
 	done
 }
 
+# $1=package name, $2=configure options
+do_build() {
+	if [ -z ${1} ] || [ -z ${2} ]; then
+		echo "Exiting..."
+		exit 0
+	fi
+	
+	local EXT="tar.gz"
+	if [ ! -n ${3} ]; then
+		EXT=${3}
+	fi
+	
+	local PACKAGE=${1}
+	local FILE_NAME=${PACKAGE}.${EXT}
+	local OPTS=${2}
+	
+	get_file ${FILE_NAME}
+	
+	if [ ! -d ${RESOURCE_PATH}/${PACKAGE} ]; then
+		cd ${RESOURCE_PATH}
+		tar zxvf ${RESOURCE_PATH}/${FILE_NAME}
+		if [ ! -d ${RESOURCE_PATH}/${PACKAGE} ]; then
+			echo "The tar has failed. Exiting..."
+			exit 0
+		fi 
+	else 
+		echo "${BOLD_PRE}${PACKAGE}${BOLD_SUB} already exist"
+	fi
+	
+	cd ${RESOURCE_PATH}/${PACKAGE}
+	
+	echo "Configuring ${BOLD_PRE}${PACKAGE}${BOLD_SUB}...";
+	
+	./configure ${OPTS}
+	
+	echo "Done. Making ${BOLD_PRE}${PACKAGE}${BOLD_SUB}...";
+	
+	do_make
+	
+	echo "Installing ${BOLD_PRE}${PACKAGE}${BOLD_SUB}"
+	
+	make install
+	
+	echo "Done ${BOLD_PRE}${PACKAGE}${BOLD_SUB}"
+}
+
 # Make new build conf
-build_autoconf()
-{
-	local AUTOCONF_VER="$(get_ver autoconf_ver)"
-	get_file autoconf-${AUTOCONF_VER}.tar.gz
-	
-	if [ ! -d ${RESOURCE_PATH}/autoconf-${AUTOCONF_VER} ]; then
-		tar zxvf ${RESOURCE_PATH}/autoconf-${AUTOCONF_VER}.tar.gz
-		if [ ! -d ${RESOURCE_PATH}/autoconf-${AUTOCONF_VER} ]; then
-			echo "The tar has failed. Exiting..."
-			exit 0
-		fi 
-	else 
-		echo "${BOLD_PRE}autoconf-${AUTOCONF_VER}${BOLD_SUB} already exist"
-	fi
-	
-	cd ${RESOURCE_PATH}/autoconf-${AUTOCONF_VER}
-	
-	echo "Configuring ${BOLD_PRE}autoconf-${AUTOCONF_VER}${BOLD_SUB}...";
-	
-	./configure --prefix=/usr/local
-	
-	echo "Done. Making ${BOLD_PRE}autoconf-${AUTOCONF_VER}${BOLD_SUB}...";
-	
-	do_make
-	
-	echo "Installing ${BOLD_PRE}autoconf-${AUTOCONF_VER}${BOLD_SUB}"
-	
-	make install
-	
-	echo "Done ${BOLD_PRE}autoconf-${AUTOCONF_VER}${BOLD_SUB}"
+build_autoconf() {
+	local PACKAGE="autoconf-$(get_ver autoconf_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local/"
 }
 
-build_automake()
-{
-	local AUTOMAKE_VER="$(get_ver automake_ver)"
-	get_file automake-${AUTOMAKE_VER}.tar.gz
-	
-	if [ ! -d ${RESOURCE_PATH}/automake-${AUTOMAKE_VER} ]; then
-		tar zxvf ${RESOURCE_PATH}/automake-${AUTOMAKE_VER}.tar.gz
-		if [ ! -d ${RESOURCE_PATH}/automake-${AUTOMAKE_VER} ]; then
-			echo "The tar has failed. Exiting..."
-			exit 0
-		fi 
-	else 
-		echo "${BOLD_PRE}automake-${automake_VER}${BOLD_SUB} already exist"
-	fi
-	
-	cd ${RESOURCE_PATH}/automake-${AUTOMAKE_VER}
-	
-	echo "Configuring ${BOLD_PRE}automake-${AUTOMAKE_VER}${BOLD_SUB}...";
-	
-	./configure --prefix=/usr/local
-	
-	echo "Done. Making ${BOLD_PRE}automake-${AUTOMAKE_VER}${BOLD_SUB}...";
-	
-	do_make
-	
-	echo "Installing ${BOLD_PRE}automake-${AUTOMAKE_VER}${BOLD_SUB}"
-	
-	make install
-	
-	echo "Done ${BOLD_PRE}automake-${AUTOMAKE_VER}${BOLD_SUB}"
+build_automake() {
+	local PACKAGE="autoconf-$(get_ver automake_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local/"
 }
 
-build_libtool()
-{
-	local LIBTOOL_VER="$(get_ver libtool_ver)"
-	get_file libtool-${LIBTOOL_VER}.tar.gz
-	
-	if [ ! -d ${RESOURCE_PATH}/libtool-${LIBTOOL_VER} ]; then
-		tar zxvf ${RESOURCE_PATH}/libtool-${LIBTOOL_VER}.tar.gz
-		if [ ! -d ${RESOURCE_PATH}/libtool-${LIBTOOL_VER} ]; then
-			echo "The tar has failed. Exiting..."
-			exit 0
-		fi 
-	else 
-		echo "${BOLD_PRE}libtool-${LIBTOOL_VER}${BOLD_SUB} already exist"
-	fi
-	
-	cd ${RESOURCE_PATH}/libtool-${LIBTOOL_VER}
-	
-	echo "Configuring ${BOLD_PRE}libtool-${LIBTOOL_VER}${BOLD_SUB}...";
-	
-	./configure --prefix=/usr/local
-	
-	echo "Done. Making ${BOLD_PRE}libtool-${LIBTOOL_VER}${BOLD_SUB}...";
-	
-	do_make
-	
-	echo "Installing ${BOLD_PRE}libtool-${LIBTOOL_VER}${BOLD_SUB}"
-	
-	make install
-	
-	echo "Done ${BOLD_PRE}libtool-${LIBTOOL_VER}${BOLD_SUB}"
+build_libtool() {
+	local PACKAGE="libtool-$(get_ver libtool_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local/"
 }
 
-build_libjpeg()
-{
-	local LIBJPG_VER="$(get_ver LIBJPG_VER)"
-	get_file libjpg-${LIBJPG_VER}.tar.gz
-	
-	if [ ! -d ${RESOURCE_PATH}/libjpg-${LIBJPG_VER} ]; then
-		tar zxvf ${RESOURCE_PATH}/libjpg-${LIBJPG_VER}.tar.gz
-		if [ ! -d ${RESOURCE_PATH}/libjpg-${LIBJPG_VER} ]; then
-			echo "The tar has failed. Exiting..."
-			exit 0
-		fi 
-	else 
-		echo "${BOLD_PRE}libjpg-${LIBJPG_VER}${BOLD_SUB} already exist"
-	fi
-	
-	cd ${RESOURCE_PATH}/libjpg-${LIBJPG_VER}
-	
-	echo "Configuring ${BOLD_PRE}libjpg-${LIBJPG_VER}${BOLD_SUB}...";
-	
-	./configure --prefix=/usr/local
-	
-	echo "Done. Making ${BOLD_PRE}libjpg-${LIBJPG_VER}${BOLD_SUB}...";
-	
-	do_make
-	
-	echo "Installing ${BOLD_PRE}libjpg-${LIBJPG_VER}${BOLD_SUB}"
-	
-	make install
+build_libjpeg() {
+	local PACKAGE="libjpeg-$(get_ver autoconf_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local/"
 	
 	# Fix path
 	mkdir -p /usr/local/expanel/opt/libjpeg/bin
 	mkdir -p /usr/local/expanel/opt/libjpeg/man/man1
-	
-	echo "Done ${BOLD_PRE}libjpg-${LIBJPG_VER}${BOLD_SUB}"
 }
 
-build_libpng()
-{
-	local LIBPNG_VER="$(get_ver LIBPNG_VER)"
-	get_file libpng-${LIBPNG_VER}.tar.gz
-	
-	if [ ! -d ${RESOURCE_PATH}/libpng-${LIBPNG_VER} ]; then
-		tar zxvf ${RESOURCE_PATH}/libpng-${LIBPNG_VER}.tar.gz
-		if [ ! -d ${RESOURCE_PATH}/libpng-${LIBPNG_VER} ]; then
-			echo "The tar has failed. Exiting..."
-			exit 0
-		fi 
-	else 
-		echo "${BOLD_PRE}libpng-${LIBPNG_VER}${BOLD_SUB} already exist"
-	fi
-	
-	cd ${RESOURCE_PATH}/libpng-${LIBPNG_VER}
-	
-	echo "Configuring ${BOLD_PRE}libpng-${LIBPNG_VER}${BOLD_SUB}...";
-	
-	./configure --prefix=/usr/local
-	
-	echo "Done. Making ${BOLD_PRE}libpng-${LIBPNG_VER}${BOLD_SUB}...";
-	
-	do_make
-	
-	echo "Installing ${BOLD_PRE}libpng-${LIBPNG_VER}${BOLD_SUB}"
-	
-	make install
-	
-	echo "Done ${BOLD_PRE}libpng-${LIBPNG_VER}${BOLD_SUB}"
+build_libpng() {
+	local PACKAGE="libpng-$(get_ver libpng_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local/"
 }
 
 
-build_curl()
-{
-	wget 
-	tar zxvf
-	./configure --prefix=/usr/local/expanel/opt/curl
+build_curl() {
+	local PACKAGE="curl-$(get_ver curl_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local/expanel/opt/curl"
 }
 
-build_pcre()
-{
-	wget
-	tar zxvf
-	./configure --prefix=/usr/local/expanel/opt/pcre --enable-utf8 --enable-unicode-properties
+build_pcre() {
+	local PACKAGE="pcre-$(get_ver pcre_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local/expanel/opt/pcre --enable-utf8 --enable-unicode-properties"
 }
 
-build_libcrypt()
-{
-	wget
-	tar zxvf
-	./configure --prefix=/usr/local --enable-ltdl-install --disable-posix-threads
+build_libcrypt() {
+	local PACKAGE="pcre-$(get_ver pcre_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local --enable-ltdl-install --disable-posix-threads"
 }
 
 
-
-build_libxml2()
-{
-	wget 
-	tar zxvf 
-	./configure --prefix=/usr/local/expanel/opt/libxml2 --without-python
-	make
-	make install
-	
-}
-
-#build_apache() {
-#}
-
-#build_nginx() {
-#}
-
-#build_php() {
-#}
-
-#build_mysql() {
-#}
-
-#build_mariadb() {
-#}
-
-# Build new conf
-build_options()
-{
-echo "What mode should the default instance of PHP use? (mod_php/suphp/php-fpm/fastcgi): ";
-        read php1type;
-        until [ "${php1type}" = "mod_php" ] || [ "${php1type}" = "suphp" ] || [ "${php1type}" = "php-fpm" ] || [ "${php1type}" = "fastcgi" ]; do
-                echo "Please enter 'mod_php', 'suphp', 'php-fpm' or 'fastcgi':"
-                read php1type;
-        done
+build_libxml2() {
+	local PACKAGE="libxml2-$(get_ver libxml2_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local/expanel/opt/libxml2 --without-python"
 }
 
 rm -rf ${LOCK_FILE}
