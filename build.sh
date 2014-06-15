@@ -115,6 +115,29 @@ set_opt()
 	echo "Changed ${BOLD_PRE}${1}${BOLD_SUB} from ${BOLD_PRE}${OLD_VALUE}${BOLD_SUB} to ${BOLD_PRE}${2}${BOLD_SUB}"
 }
 
+do_make() {
+	while
+	echo "Trying to make ..."
+	do
+		make
+		
+		if [ $? -ne 0 ]; then
+			printf "\nThe make has failed, would you like to try to make again? (yes/no): "
+			read input
+			until [ "${input}" = "yes" ] || [ "${input}" = "no" ]; do
+				printf "\nPlease enter 'yes' or 'no': "
+				read input
+			done
+			
+			if [ "${input}" = "no" ]; then
+				exit 0
+			fi
+		else
+			break
+		fi
+	done
+}
+
 # Make new build conf
 build_autoconf()
 {
@@ -134,29 +157,13 @@ build_autoconf()
 	cd ${RESOURCE_PATH}/autoconf-${AUTOCONF_VER}
 	
 	echo "Configuring ${BOLD_PRE}autoconf-${AUTOCONF_VER}${BOLD_SUB}...";
+	
 	./configure --prefix=/usr/local
+	
 	echo "Done. Making ${BOLD_PRE}autoconf-${AUTOCONF_VER}${BOLD_SUB}...";
-	while
-	echo "Trying to make ..."
-	do
-		make
-		
-		if [ $? -ne 0 ]; then
-			printf "\nThe make has failed, would you like to try to make again? (yes/no): "
-			read yesno
-			until [ "${yesno}" = "yes" ] || [ "${yesno}" = "no" ]; do
-				printf "\nPlease enter 'yes' or 'no': "
-				read yesno
-			done
-			
-			if [ "${yesno}" = "no" ]; then
-				exit 0
-			fi
-		else
-			break
-		fi
-	done
-	echo "Make complete"
+	
+	do_make
+	
 	echo "Installing ${BOLD_PRE}autoconf-${AUTOCONF_VER}${BOLD_SUB}"
 	
 	make install
@@ -166,41 +173,134 @@ build_autoconf()
 
 build_automake()
 {
-	wget 
-	tar zxvf
+	local AUTOMAKE_VER="$(get_ver automake_ver)"
+	get_file automake-${AUTOMAKE_VER}.tar.gz
+	
+	if [ ! -d ${RESOURCE_PATH}/automake-${AUTOMAKE_VER} ]; then
+		tar zxvf ${RESOURCE_PATH}/automake-${AUTOMAKE_VER}.tar.gz
+		if [ ! -d ${RESOURCE_PATH}/automake-${AUTOMAKE_VER} ]; then
+			echo "The tar has failed. Exiting..."
+			exit 0
+		fi 
+	else 
+		echo "${BOLD_PRE}automake-${automake_VER}${BOLD_SUB} already exist"
+	fi
+	
+	cd ${RESOURCE_PATH}/automake-${AUTOMAKE_VER}
+	
+	echo "Configuring ${BOLD_PRE}automake-${AUTOMAKE_VER}${BOLD_SUB}...";
+	
 	./configure --prefix=/usr/local
-	make 
+	
+	echo "Done. Making ${BOLD_PRE}automake-${AUTOMAKE_VER}${BOLD_SUB}...";
+	
+	do_make
+	
+	echo "Installing ${BOLD_PRE}automake-${AUTOMAKE_VER}${BOLD_SUB}"
+	
 	make install
+	
+	echo "Done ${BOLD_PRE}automake-${AUTOMAKE_VER}${BOLD_SUB}"
 }
 
 build_libtool()
 {
-	wget
-	tar zxvf
+	local LIBTOOL_VER="$(get_ver libtool_ver)"
+	get_file libtool-${LIBTOOL_VER}.tar.gz
+	
+	if [ ! -d ${RESOURCE_PATH}/libtool-${LIBTOOL_VER} ]; then
+		tar zxvf ${RESOURCE_PATH}/libtool-${LIBTOOL_VER}.tar.gz
+		if [ ! -d ${RESOURCE_PATH}/libtool-${LIBTOOL_VER} ]; then
+			echo "The tar has failed. Exiting..."
+			exit 0
+		fi 
+	else 
+		echo "${BOLD_PRE}libtool-${LIBTOOL_VER}${BOLD_SUB} already exist"
+	fi
+	
+	cd ${RESOURCE_PATH}/libtool-${LIBTOOL_VER}
+	
+	echo "Configuring ${BOLD_PRE}libtool-${LIBTOOL_VER}${BOLD_SUB}...";
+	
 	./configure --prefix=/usr/local
-	make
+	
+	echo "Done. Making ${BOLD_PRE}libtool-${LIBTOOL_VER}${BOLD_SUB}...";
+	
+	do_make
+	
+	echo "Installing ${BOLD_PRE}libtool-${LIBTOOL_VER}${BOLD_SUB}"
+	
 	make install
+	
+	echo "Done ${BOLD_PRE}libtool-${LIBTOOL_VER}${BOLD_SUB}"
 }
 
 build_libjpeg()
 {
-	wget
-	tar zxvf
+	local LIBJPG_VER="$(get_ver LIBJPG_VER)"
+	get_file libjpg-${LIBJPG_VER}.tar.gz
+	
+	if [ ! -d ${RESOURCE_PATH}/libjpg-${LIBJPG_VER} ]; then
+		tar zxvf ${RESOURCE_PATH}/libjpg-${LIBJPG_VER}.tar.gz
+		if [ ! -d ${RESOURCE_PATH}/libjpg-${LIBJPG_VER} ]; then
+			echo "The tar has failed. Exiting..."
+			exit 0
+		fi 
+	else 
+		echo "${BOLD_PRE}libjpg-${LIBJPG_VER}${BOLD_SUB} already exist"
+	fi
+	
+	cd ${RESOURCE_PATH}/libjpg-${LIBJPG_VER}
+	
+	echo "Configuring ${BOLD_PRE}libjpg-${LIBJPG_VER}${BOLD_SUB}...";
+	
 	./configure --prefix=/usr/local
-	make
+	
+	echo "Done. Making ${BOLD_PRE}libjpg-${LIBJPG_VER}${BOLD_SUB}...";
+	
+	do_make
+	
+	echo "Installing ${BOLD_PRE}libjpg-${LIBJPG_VER}${BOLD_SUB}"
+	
 	make install
-	# Fix
+	
+	# Fix path
 	mkdir -p /usr/local/expanel/opt/libjpeg/bin
 	mkdir -p /usr/local/expanel/opt/libjpeg/man/man1
+	
+	echo "Done ${BOLD_PRE}libjpg-${LIBJPG_VER}${BOLD_SUB}"
 }
 
 build_libpng()
 {
-	wget
-	tar zxvf
+	local LIBPNG_VER="$(get_ver LIBPNG_VER)"
+	get_file libpng-${LIBPNG_VER}.tar.gz
+	
+	if [ ! -d ${RESOURCE_PATH}/libpng-${LIBPNG_VER} ]; then
+		tar zxvf ${RESOURCE_PATH}/libpng-${LIBPNG_VER}.tar.gz
+		if [ ! -d ${RESOURCE_PATH}/libpng-${LIBPNG_VER} ]; then
+			echo "The tar has failed. Exiting..."
+			exit 0
+		fi 
+	else 
+		echo "${BOLD_PRE}libpng-${LIBPNG_VER}${BOLD_SUB} already exist"
+	fi
+	
+	cd ${RESOURCE_PATH}/libpng-${LIBPNG_VER}
+	
+	echo "Configuring ${BOLD_PRE}libpng-${LIBPNG_VER}${BOLD_SUB}...";
+	
 	./configure --prefix=/usr/local
-	make
+	
+	echo "Done. Making ${BOLD_PRE}libpng-${LIBPNG_VER}${BOLD_SUB}...";
+	
+	do_make
+	
+	echo "Installing ${BOLD_PRE}libpng-${LIBPNG_VER}${BOLD_SUB}"
+	
 	make install
+	
+	echo "Done ${BOLD_PRE}libpng-${LIBPNG_VER}${BOLD_SUB}"
 }
 
 
