@@ -236,4 +236,402 @@ build_libxml2() {
 	do_build ${PACKAGE} "--prefix=/usr/local/expanel/opt/libxml2 --without-python"
 }
 
+build_mhash() {
+	local PACKAGE="mhash-$(get_ver mhash_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local/"
+}
+
+build_freetype() {
+	local PACKAGE="freetype-$(get_ver freetype_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local/"
+}
+
+build_icu() {
+	local PACKAGE="icu-$(get_ver icu_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local/expanel/opt/icu"
+}
+
+build_iconv() {
+	local PACKAGE="iconv-$(get_ver iconv_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local/"
+}
+
+build_zlib() {
+	local PACKAGE="zlib-$(get_ver zlib_ver)"
+	do_build ${PACKAGE} "--prefix=/usr/local/"
+}
+
+build_libevent() {
+
+}
+
+build_apache() {
+	# Check exist
+	if [ -d /usr/local/expanel/apache ]; then
+		mv /usr/local/expanel/apache /usr/local/expanel/apache.bak
+	fi
+	
+	local APACHE_VER="$(getVer apache_ver)"
+	local PACKAGE=httpd-${APACHE_VER}
+	local FILE_NAME=${PACKAGE}.tar.gz
+	local CONF_NAME="configure.apache${APACHE_VER//./}"
+	
+	cd ${RESOURCE_PATH}
+	
+	if [ ! -d ${PACKAGE} ]; then
+		if [ ! -e ${FILE_NAME} ]; then
+			getFile ${FILE_NAME}
+		fi
+		if [ ! -e ${FILE_NAME} ]; then
+			echo "Downloaded file ${FILE_NAME} does not exist or is empty after download";
+			exit 0
+		else
+			tar zxvf ${FILE_NAME}
+			if [ ! -d ${PACKAGE} ]; then
+				echo "The tar has failed. Exiting..."
+				exit 0
+			fi	
+		fi
+		
+	else 
+		echo "${BOLD_PRE}${PACKAGE}${BOLD_SUB} already exist"
+	fi
+	
+	cd ${PACKAGE}
+	
+	# Get PHP handler
+	local PHP_HANDLER="$(getOpt php_handler)"
+	if [ -z ${PHP_HANDLER} ]; then
+		echo "You must configure PHP handler before. Exiting..."
+		exit 0
+	fi
+	
+	if [ ! -e ${BUILD_PATH}/custom/apache/${CONF_NAME}.${PHP_HANDLER} ]; then
+		if [ ! -d ${BUILD_PATH}/custom/apache ]; then
+			mkdir -p ${BUILD_PATH}/custom/apache
+		fi
+		
+		wget ${WEB_RESOURCE}/custom/apache/${CONF_NAME}.${PHP_HANDLER} -O ${BUILD_PATH}/custom/apache/${CONF_NAME}.${PHP_HANDLER}
+		
+		if [ ! -s ${BUILD_PATH}/custom/apache/${CONF_NAME}.${PHP_HANDLER} ]; then
+			echo "Downloaded file apache configure does not exist or is empty after download. Exiting...";
+			exit 0
+		fi
+	fi
+	
+	sh ${BUILD_PATH}/custom/apache/${CONF_NAME}.${PHP_HANDLER}
+		
+	do_make
+	
+	echo "Installing ${BOLD_PRE}${PACKAGE}${BOLD_SUB}"
+	
+	make install
+	
+	echo "Done ${BOLD_PRE}${PACKAGE}${BOLD_SUB}"
+	
+}
+
+build_apache_conf() {
+
+}
+
+build_nginx() {
+	# Check exist
+	if [ -d /usr/local/expanel/nginx ]; then
+		mv /usr/local/expanel/nginx /usr/local/expanel/nginx.bak
+	fi
+	
+	local NGINX_VER="$(getVer nginx_ver)"
+	local PACKAGE=httpd-${NGINX_VER}
+	local FILE_NAME=${PACKAGE}.tar.gz
+	
+	cd ${RESOURCE_PATH}
+	
+	if [ ! -d ${PACKAGE} ]; then
+		if [ ! -e ${FILE_NAME} ]; then
+			getFile ${FILE_NAME}
+		fi
+		if [ ! -e ${FILE_NAME} ]; then
+			echo "Downloaded file ${FILE_NAME} does not exist or is empty after download";
+			exit 0
+		else
+			tar zxvf ${FILE_NAME}
+			if [ ! -d ${PACKAGE} ]; then
+				echo "The tar has failed. Exiting..."
+				exit 0
+			fi	
+		fi
+		
+	else 
+		echo "${BOLD_PRE}${PACKAGE}${BOLD_SUB} already exist"
+	fi
+	
+	cd ${PACKAGE}
+	
+	if [ ! -e ${BUILD_PATH}/custom/nginx/configure.nginx ]; then
+		if [ ! -d ${BUILD_PATH}/custom/nginx ]; then
+			mkdir -p ${BUILD_PATH}/custom/nginx
+		fi
+		
+		wget ${WEB_RESOURCE}/custom/nginx/configure.nginx -O ${BUILD_PATH}/custom/nginx/configure.nginx
+		
+		if [ ! -s ${BUILD_PATH}/custom/nginx/configure.nginx ]; then
+			echo "Downloaded file apache configure does not exist or is empty after download. Exiting...";
+			exit 0
+		fi
+	fi
+	
+	sh ${BUILD_PATH}/custom/nginx/configure.nginx
+		
+	do_make
+	
+	echo "Installing ${BOLD_PRE}${PACKAGE}${BOLD_SUB}"
+	
+	make install
+	
+	echo "Done ${BOLD_PRE}${PACKAGE}${BOLD_SUB}"
+}
+
+build_php() {
+	# Check exist
+	if [ -d /usr/local/expanel/php ]; then
+		mv /usr/local/expanel/php /usr/local/expanel/php.bak
+	fi
+	
+	local PHP_VER="$(getVer php_ver)"
+	local PACKAGE=httpd-${PHP_VER}
+	local FILE_NAME=${PACKAGE}.tar.gz
+	local CONF_NAME="configure.php${PHP_VER//./}"
+	
+	cd ${RESOURCE_PATH}
+	
+	if [ ! -d ${PACKAGE} ]; then
+		if [ ! -e ${FILE_NAME} ]; then
+			getFile ${FILE_NAME}
+		fi
+		if [ ! -e ${FILE_NAME} ]; then
+			echo "Downloaded file ${FILE_NAME} does not exist or is empty after download";
+			exit 0
+		else
+			tar zxvf ${FILE_NAME}
+			if [ ! -d ${PACKAGE} ]; then
+				echo "The tar has failed. Exiting..."
+				exit 0
+			fi	
+		fi
+		
+	else 
+		echo "${BOLD_PRE}${PACKAGE}${BOLD_SUB} already exist"
+	fi
+	
+	cd ${PACKAGE}
+	
+	# Get PHP handler to compile PHP (DSO, FCGI)
+	local PHP_HANDLER="$(getOpt apache_handler)"
+	if [ -z ${PHP_HANDLER} ]; then
+		echo "You must configure PHP handler before. Exiting..."
+		exit 0
+	fi
+	
+	if [ "${PHP_HANDLER}" = "dso" ]; then
+		if [ ! -e /usr/local/expanel/apache/bin/apachectl ]; then
+			build_apache
+		fi
+	fi
+	
+	if [ ! -e ${BUILD_PATH}/custom/php/${CONF_NAME}.${PHP_HANDLER} ]; then
+		if [ ! -d ${BUILD_PATH}/custom/php ]; then
+			mkdir -p ${BUILD_PATH}/custom/php
+		fi
+		
+		wget ${WEB_RESOURCE}/custom/php/${CONF_NAME}.${PHP_HANDLER} -O ${BUILD_PATH}/custom/php/${CONF_NAME}.${PHP_HANDLER}
+		
+		if [ ! -s ${BUILD_PATH}/custom/php/${CONF_NAME}.${PHP_HANDLER} ]; then
+			echo "Downloaded file apache configure does not exist or is empty after download. Exiting...";
+			exit 0
+		fi
+	fi
+	
+	sh ${BUILD_PATH}/custom/php/${CONF_NAME}.${PHP_HANDLER}
+		
+	do_make
+	
+	echo "Installing ${BOLD_PRE}${PACKAGE}${BOLD_SUB}"
+	
+	make install
+	
+	echo "Done ${BOLD_PRE}${PACKAGE}${BOLD_SUB}"
+
+}
+
+build_php_conf() {
+	if [ -d /usr/local/expanel/php ]; then
+		build_php
+	fi
+	
+	local PHP_HANDLER="$(get_opt php_handler)"
+	
+	if [ "${PHP_HANDLER}" = "dso" ]; then
+		build_ruid2
+	elif [ "${PHP_HANDLER}" = "fcgi" ]; then
+		build_fcgi
+	elif [ "${PHP_HANDLER}" = "php-fpm" ]; then
+		build_fpm
+	fi
+}
+
+build_fcgi() {
+	if [ ! -e /usr/local/expanel/apache/bin/apxs ]; then
+		build_apache
+	fi
+	
+	if [ ! -e /usr/local/expanel/php/bin/php ]; then
+		build_php
+	fi
+	
+	local MOD_FCGI_VER="$(get_ver mod_fcgi_ver)"
+	local PACKAGE="mod_fcgi-${MOD_RUID2_VER}"
+	local FILE_NAME="${PACKAGE}.tar.gz"
+	
+	cd ${RESOURCE_PATH}
+	
+	if [ ! -d ${PACKAGE} ]; then
+		if [ ! -e ${FILE_NAME} ]; then
+			getFile ${FILE_NAME}
+		fi
+		if [ ! -e ${FILE_NAME} ]; then
+			echo "Downloaded file ${FILE_NAME} does not exist or is empty after download";
+			exit 0
+		else
+			tar zxvf ${FILE_NAME}
+			if [ ! -d ${PACKAGE} ]; then
+				echo "The unzip has failed. Exiting..."
+				exit 0
+			fi	
+		fi
+		
+	else 
+		echo "${BOLD_PRE}${PACKAGE}${BOLD_SUB} already exist"
+	fi
+	
+	cd ${PACKAGE}
+	
+	APXS=/usr/local/expanel/apache/bin/apxs ./configure.apxs
+	make
+	
+	if [ $? -ne 0 ]; then
+		printf "\nThere was an error while trying to install ${PACKAGE}.\n";
+		exit 0;
+	fi
+	
+	make install
+	
+	# Configure
+	# Step 1
+	# Step 2
+	# ...
+}
+
+build_ruid2() {
+	if [ ! -e /usr/local/expanel/apache/bin/apxs ]; then
+		build_apache
+	fi
+	
+	if [ ! -e /usr/local/expanel/php/bin/php ]; then
+		build_php
+	fi
+	
+	local MOD_RUID2_VER="$(get_ver mod_ruid2_ver)"
+	local PACKAGE="mod_ruid2-${MOD_RUID2_VER}"
+	local FILE_NAME="${PACKAGE}.zip"
+	
+	cd ${RESOURCE_PATH}
+	
+	if [ ! -d ${PACKAGE} ]; then
+		if [ ! -e ${FILE_NAME} ]; then
+			getFile ${FILE_NAME}
+		fi
+		if [ ! -e ${FILE_NAME} ]; then
+			echo "Downloaded file ${FILE_NAME} does not exist or is empty after download";
+			exit 0
+		else
+			unzip ${FILE_NAME}
+			if [ ! -d ${PACKAGE} ]; then
+				echo "The unzip has failed. Exiting..."
+				exit 0
+			fi	
+		fi
+		
+	else 
+		echo "${BOLD_PRE}${PACKAGE}${BOLD_SUB} already exist"
+	fi
+	
+	cd ${PACKAGE}
+	
+	# Get all the dependencies required to build
+	
+	if [ ! -e /lib/libcap.so ] && [ ! -e /lib64/libcap.so ] && [ ! -e /lib/x86_64-linux-gnu/libcap.so ] && [ ! -e /lib/i386-linux-gnu/libcap.so ]; then
+		echo "Cannot find libcap.so.  Installing libcap";
+
+		yum -y install libcap-devel
+	fi
+	
+	if [ ! -e /usr/bin/bzip2 ] && [ ! -e /bin/bzip2 ]; then
+		echo "Cannot find bzip2. Installing bzip2.";
+
+		yum -y install bzip2
+	fi
+	
+	/usr/local/expanel/apache/bin/apxs -a -i -l cap -c mod_ruid2.c
+	
+	if [ $? -ne 0 ]; then
+		printf "\nThere was an error while trying to install ${PACKAGE}.\n";
+		exit 0;
+	fi
+	
+	# Configure
+	# Step 1
+	# Step 2
+	# ...
+}
+
+build_fpm() {
+	# Configure
+	# Step 1
+	# Step 2
+	# ...
+}
+
+build_php_memcache() {
+
+}
+
+build_php_apc() {
+
+}
+
+build_php_zend() {
+
+}
+
+build_php_icube() {
+
+}
+
+build_mysql() {
+
+}
+
+build_mariadb() {
+
+}
+
+build_percona() {
+
+}
+
+build_memcache_server() {
+
+}
+
 rm -rf ${LOCK_FILE}
