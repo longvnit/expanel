@@ -261,17 +261,12 @@ build_zlib() {
 	do_build ${PACKAGE} "--prefix=/usr/local/"
 }
 
-build_libevent() {
-
-}
+#build_libevent() {
+#
+#}
 
 build_apache() {
-	# Check exist
-	if [ -d /usr/local/expanel/apache ]; then
-		mv /usr/local/expanel/apache /usr/local/expanel/apache.bak
-	fi
-	
-	local APACHE_VER="$(getVer apache_ver)"
+	local APACHE_VER="$(get_ver apache_ver)"
 	local PACKAGE=httpd-${APACHE_VER}
 	local FILE_NAME=${PACKAGE}.tar.gz
 	local CONF_NAME="configure.apache${APACHE_VER//./}"
@@ -280,7 +275,7 @@ build_apache() {
 	
 	if [ ! -d ${PACKAGE} ]; then
 		if [ ! -e ${FILE_NAME} ]; then
-			getFile ${FILE_NAME}
+			get_file ${FILE_NAME}
 		fi
 		if [ ! -e ${FILE_NAME} ]; then
 			echo "Downloaded file ${FILE_NAME} does not exist or is empty after download";
@@ -297,10 +292,47 @@ build_apache() {
 		echo "${BOLD_PRE}${PACKAGE}${BOLD_SUB} already exist"
 	fi
 	
-	cd ${PACKAGE}
+	cd ${PACKAGE}/srclib
+	
+	# Download APR && APR-Util
+	local APR_VER="apr-$(get_ver apr_ver)"
+	if [ ! -e ${APR_VER}.tar.gz ]; then
+		get_file ${APR_VER}.tar.gz
+	fi
+	
+	rm -rf apr
+	
+	tar zxvf ${APR_VER}.tar.gz
+	
+	if [ ! -d ${APR_VER} ]; then
+		echo "The tar has failed. Exiting..."
+		exit 0
+	fi
+	
+	mv ${APR_VER} apr
+	
+	local APR_UTIL_VER="apr-util-$(get_ver apr_util_ver)"
+	if [ ! -e ${APR_UTIL_VER}.tar.gz ]; then
+		get_file ${APR_UTIL_VER}.tar.gz
+	fi
+	
+	rm -rf apr-util
+	
+	tar zxvf ${APR_UTIL_VER}.tar.gz
+	
+	if [ ! -d ${APR_UTIL_VER} ]; then
+		echo "The tar has failed. Exiting..."
+		exit 0
+	fi
+	
+	mv ${APR_UTIL_VER} apr-util
+	
+	# Go back package
+	cd ${RESOURCE_PATH}/${PACKAGE}
+	
 	
 	# Get PHP handler
-	local PHP_HANDLER="$(getOpt php_handler)"
+	local PHP_HANDLER="$(get_opt php_handler)"
 	if [ -z ${PHP_HANDLER} ]; then
 		echo "You must configure PHP handler before. Exiting..."
 		exit 0
@@ -325,15 +357,19 @@ build_apache() {
 	
 	echo "Installing ${BOLD_PRE}${PACKAGE}${BOLD_SUB}"
 	
+	if [ -d /usr/local/expanel/apache ]; then
+		mv /usr/local/expanel/apache /usr/local/expanel/apache.bak
+	fi
+	
 	make install
 	
 	echo "Done ${BOLD_PRE}${PACKAGE}${BOLD_SUB}"
 	
 }
 
-build_apache_conf() {
-
-}
+#build_apache_conf() {
+#
+#}
 
 build_nginx() {
 	# Check exist
@@ -341,7 +377,7 @@ build_nginx() {
 		mv /usr/local/expanel/nginx /usr/local/expanel/nginx.bak
 	fi
 	
-	local NGINX_VER="$(getVer nginx_ver)"
+	local NGINX_VER="$(get_ver nginx_ver)"
 	local PACKAGE=httpd-${NGINX_VER}
 	local FILE_NAME=${PACKAGE}.tar.gz
 	
@@ -349,7 +385,7 @@ build_nginx() {
 	
 	if [ ! -d ${PACKAGE} ]; then
 		if [ ! -e ${FILE_NAME} ]; then
-			getFile ${FILE_NAME}
+			get_file ${FILE_NAME}
 		fi
 		if [ ! -e ${FILE_NAME} ]; then
 			echo "Downloaded file ${FILE_NAME} does not exist or is empty after download";
@@ -398,7 +434,7 @@ build_php() {
 		mv /usr/local/expanel/php /usr/local/expanel/php.bak
 	fi
 	
-	local PHP_VER="$(getVer php_ver)"
+	local PHP_VER="$(get_ver php_ver)"
 	local PACKAGE=httpd-${PHP_VER}
 	local FILE_NAME=${PACKAGE}.tar.gz
 	local CONF_NAME="configure.php${PHP_VER//./}"
@@ -407,7 +443,7 @@ build_php() {
 	
 	if [ ! -d ${PACKAGE} ]; then
 		if [ ! -e ${FILE_NAME} ]; then
-			getFile ${FILE_NAME}
+			get_file ${FILE_NAME}
 		fi
 		if [ ! -e ${FILE_NAME} ]; then
 			echo "Downloaded file ${FILE_NAME} does not exist or is empty after download";
@@ -427,7 +463,7 @@ build_php() {
 	cd ${PACKAGE}
 	
 	# Get PHP handler to compile PHP (DSO, FCGI)
-	local PHP_HANDLER="$(getOpt apache_handler)"
+	local PHP_HANDLER="$(get_opt apache_handler)"
 	if [ -z ${PHP_HANDLER} ]; then
 		echo "You must configure PHP handler before. Exiting..."
 		exit 0
@@ -497,7 +533,7 @@ build_fcgi() {
 	
 	if [ ! -d ${PACKAGE} ]; then
 		if [ ! -e ${FILE_NAME} ]; then
-			getFile ${FILE_NAME}
+			get_file ${FILE_NAME}
 		fi
 		if [ ! -e ${FILE_NAME} ]; then
 			echo "Downloaded file ${FILE_NAME} does not exist or is empty after download";
@@ -549,7 +585,7 @@ build_ruid2() {
 	
 	if [ ! -d ${PACKAGE} ]; then
 		if [ ! -e ${FILE_NAME} ]; then
-			getFile ${FILE_NAME}
+			get_file ${FILE_NAME}
 		fi
 		if [ ! -e ${FILE_NAME} ]; then
 			echo "Downloaded file ${FILE_NAME} does not exist or is empty after download";
@@ -595,43 +631,43 @@ build_ruid2() {
 	# ...
 }
 
-build_fpm() {
+#build_fpm() {
 	# Configure
 	# Step 1
 	# Step 2
 	# ...
-}
+#}
 
-build_php_memcache() {
+#build_php_memcache() {
+#
+#}
 
-}
+#build_php_apc() {
+#
+#}
 
-build_php_apc() {
+#build_php_zend() {
+#
+#}
 
-}
+#build_php_icube() {
+#
+#}
 
-build_php_zend() {
+#build_mysql() {
+#
+#}
 
-}
+#build_mariadb() {
+#
+#}
 
-build_php_icube() {
+#build_percona() {
+#
+#}
 
-}
-
-build_mysql() {
-
-}
-
-build_mariadb() {
-
-}
-
-build_percona() {
-
-}
-
-build_memcache_server() {
-
-}
+#build_memcache_server() {
+#
+#}
 
 rm -rf ${LOCK_FILE}
