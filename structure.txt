@@ -1,0 +1,14 @@
+ROOT (/usr/local/expanel)
+|__ /conf
+|	|__ /apache/conf/
+|	|__ /php/
+|	|__ /pureftpd
+|-- /data/
+|	|__ /templates
+|	|__ /users/
+|		|__ /userA
+|__ /opt/
+|	|__ /curl
+|	|__ /icu
+|__ /init.d/
+|__ /resources

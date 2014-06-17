@@ -670,4 +670,65 @@ build_ruid2() {
 #
 #}
 
+build_pure_ftpd() {
+	local PUREFTPD_VER="$(get_ver pureftpd_ver)"
+	local PACKAGE=httpd-${PUREFTPD_VER}
+	local FILE_NAME=${PUREFTPD_VER}.tar.gz
+	
+	cd ${RESOURCE_PATH}
+	
+	if [ ! -d ${PACKAGE} ]; then
+		if [ ! -e ${FILE_NAME} ]; then
+			get_file ${FILE_NAME}
+		fi
+		if [ ! -e ${FILE_NAME} ]; then
+			echo "Downloaded file ${FILE_NAME} does not exist or is empty after download";
+			exit 0
+		else
+			tar zxvf ${FILE_NAME}
+			if [ ! -d ${PACKAGE} ]; then
+				echo "The tar has failed. Exiting..."
+				exit 0
+			fi	
+		fi
+		
+	else 
+		echo "${BOLD_PRE}${PACKAGE}${BOLD_SUB} already exist"
+	fi
+	
+	cd ${PACKAGE}
+	
+	if [ ! -e ${BUILD_PATH}/custom/pureftpd/configure.pureftpd ]; then
+		if [ ! -d ${BUILD_PATH}/custom/pureftpd ]; then
+			mkdir -p ${BUILD_PATH}/custom/pureftpd
+		fi
+		
+		wget ${WEB_RESOURCE}/custom/nginx/configure.pureftpd -O ${BUILD_PATH}/custom/pureftpd/configure.pureftpd
+		
+		if [ ! -s ${BUILD_PATH}/custom/pureftpd/configure.pureftpd ]; then
+			echo "Downloaded file apache configure does not exist or is empty after download. Exiting...";
+			exit 0
+		fi
+	fi
+	
+	sh ${BUILD_PATH}/custom/pureftpd/configure.pureftpd
+		
+	do_make
+	
+	echo "Installing ${BOLD_PRE}${PACKAGE}${BOLD_SUB}"
+	
+	# Check exist & backup
+	if [ -d /usr/local/expanel/pureftpd ]; then
+		mv /usr/local/expanel/pureftpd /usr/local/expanel/pureftpd.bak
+	fi
+	
+	make install
+	
+	echo "Done ${BOLD_PRE}${PACKAGE}${BOLD_SUB}"
+	
+	# Configure
+	# Step 1
+	# Step 2
+}
+
 rm -rf ${LOCK_FILE}
